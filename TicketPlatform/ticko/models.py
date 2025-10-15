@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django import forms
 
 class Event(models.Model):
     name = models.CharField(max_length=200)
@@ -14,6 +15,11 @@ class Event(models.Model):
 
     def __str__(self):
         return self.name
+    
+class EventForm(forms.ModelForm):
+    class Meta:
+        model = Event
+        fields = ['name', 'description', 'date', 'time', 'location', 'price', 'total_seats', 'available_seats']
 
 
 class Ticket(models.Model):
@@ -41,4 +47,3 @@ class Payment(models.Model):
         return f"Payment for {self.ticket.event.name} ({self.status})"
 
 
-# Create your models here.

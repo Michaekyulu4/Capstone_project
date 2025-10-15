@@ -1,0 +1,28 @@
+<!-- ticko/templates/base.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ticko | Event Management</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header>
+        <h1>Ticko Platform</h1>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/events/">Events</a>
+            <a href="/accounts/login/">Login</a>
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Ticko</p>
+    </footer>
+</body>
+</html>
