@@ -24,3 +24,5 @@ class EventForm(forms.ModelForm):
             'total_seats',
             'available_seats'
         ]
+
+        

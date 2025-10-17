@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django import forms
+
 
 class Event(models.Model):
     name = models.CharField(max_length=200)
@@ -13,13 +13,13 @@ class Event(models.Model):
     available_seats = models.IntegerField()
     organizer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='organized_events')
 
+    def save(self, *args, **kwargs):
+        if not self.pk:  # only on create
+            self.available_seats = self.total_seats
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.name
-    
-class EventForm(forms.ModelForm):
-    class Meta:
-        model = Event
-        fields = ['name', 'description', 'date', 'time', 'location', 'price', 'total_seats', 'available_seats']
 
 
 class Ticket(models.Model):
@@ -45,5 +45,3 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"Payment for {self.ticket.event.name} ({self.status})"
-
-

@@ -1,12 +1,12 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Dashboard - Ticko</title>
-</head>
-<body>
-<h2>Welcome to Ticko Dashboard</h2>
-<p>Hello, {{ user.username }}!</p>
-<a href="{% url 'logout' %}">Logout</a>
-</body>
-</html>
+{% extends 'ticko/base.html' %}
 
+{% block content %}
+  <h2>Welcome to Ticko Dashboard</h2>
+  <p>Hello, {{ user.username }}!</p>
+
+  <div style="margin-top: 20px;">
+    <a href="{% url 'event_list' %}">🎫 View All Events</a><br><br>
+    <a href="{% url 'create_event' %}">➕ Create New Event</a><br><br>
+    <a href="{% url 'logout' %}">🚪 Logout</a>
+  </div>
+{% endblock %}
