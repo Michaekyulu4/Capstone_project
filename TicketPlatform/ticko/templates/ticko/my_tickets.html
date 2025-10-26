@@ -1,0 +1,14 @@
+<h2>My Tickets</h2>
+
+{% if tickets %}
+  <ul>
+    {% for ticket in tickets %}
+      <li>
+        <strong>{{ ticket.event.name }}</strong> – {{ ticket.status|title }}
+        <br>Date: {{ ticket.event.date }} | Location: {{ ticket.event.location }}
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>You haven’t booked any tickets yet.</p>
+{% endif %}

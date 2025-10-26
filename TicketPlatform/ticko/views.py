@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from .models import Event
 from .forms import EventForm
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect, get_object_or_404
 
 def register_view(request):
     if request.method == 'POST':
@@ -69,3 +70,35 @@ def create_event_view(request):
     else:
         form = EventForm()
     return render(request, 'ticko/create_event.html', {'form': form})
+@login_required
+def book_ticket_view(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+
+    # Prevent overbooking
+    if event.available_seats <= 0:
+        messages.error(request, "Sorry, no seats are available for this event.")
+        return redirect('event_detail', event_id=event.id)
+
+    # Check if user already booked
+    existing_ticket = Ticket.objects.filter(user=request.user, event=event).first()
+    if existing_ticket:
+        messages.info(request, "You already booked a ticket for this event.")
+        return redirect('event_detail', event_id=event.id)
+
+    # Create ticket
+    Ticket.objects.create(user=request.user, event=event, status='reserved')
+
+    # Reduce available seats
+    event.available_seats -= 1
+    event.save()
+
+    messages.success(request, "Ticket successfully reserved!")
+    return redirect('my_tickets')
+
+@login_required
+def my_tickets_view(request):
+    tickets = Ticket.objects.filter(user=request.user).select_related('event')
+    return render(request, 'ticko/my_tickets.html', {'tickets': tickets})
+
+def home_view(request):
+    return render(request, 'ticko/home.html')
