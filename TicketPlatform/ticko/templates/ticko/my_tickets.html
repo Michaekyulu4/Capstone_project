@@ -1,14 +1,31 @@
-<h2>My Tickets</h2>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Tickets</title>
+</head>
+<body>
+    <h1>My Tickets</h1>
 
-{% if tickets %}
-  <ul>
-    {% for ticket in tickets %}
-      <li>
-        <strong>{{ ticket.event.name }}</strong> – {{ ticket.status|title }}
-        <br>Date: {{ ticket.event.date }} | Location: {{ ticket.event.location }}
-      </li>
-    {% endfor %}
-  </ul>
+    {% if tickets %}
+        <ul>
+            {% for ticket in tickets %}
+                <li>
+                    <strong>{{ ticket.event.name }}</strong> - 
+                    {{ ticket.status }} (Booked on {{ ticket.purchase_date }})
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>You have no tickets yet.</p>
+    {% endif %}
+
+    {% if ticket.status == 'reserved' %}
+    <a href="{% url 'pay_for_ticket' ticket.id %}" class="btn btn-success btn-sm">Pay Now</a>
 {% else %}
-  <p>You haven’t booked any tickets yet.</p>
+    <span class="badge bg-success">Purchased</span>
 {% endif %}
+
+
+    <a href="{% url 'event_list' %}">Back to Events</a>
+</body>
+</html>

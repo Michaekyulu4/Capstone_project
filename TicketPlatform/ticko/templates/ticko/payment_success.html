@@ -1,0 +1,11 @@
+{% extends 'ticko/base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Payment Successful 🎉</h2>
+    <p><strong>Event:</strong> {{ payment.ticket.event.name }}</p>
+    <p><strong>Amount Paid:</strong> Ksh {{ payment.amount }}</p>
+    <p><strong>Transaction ID:</strong> {{ payment.transaction_id }}</p>
+    <p><strong>Status:</strong> {{ payment.status }}</p>
+    <a href="{% url 'my_tickets' %}" class="btn btn-primary">View My Tickets</a>
+</div>
+{% endblock %}

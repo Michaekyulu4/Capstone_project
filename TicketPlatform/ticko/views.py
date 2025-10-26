@@ -4,10 +4,33 @@ from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
-from .models import Event
+from .models import Event, Ticket
 from .forms import EventForm
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
+from django.db.models import Sum, Count
+
+@login_required
+def organizer_dashboard(request):
+    # Only show data for the logged-in organizer
+    events = Event.objects.filter(organizer=request.user)
+    total_events = events.count()
+
+    # Tickets sold across all their events
+    tickets_sold = Ticket.objects.filter(event__organizer=request.user, status='purchased').count()
+
+    # Total revenue
+    total_revenue = Payment.objects.filter(ticket__event__organizer=request.user, status='completed').aggregate(
+        total=Sum('amount')
+    )['total'] or 0
+
+    context = {
+        'total_events': total_events,
+        'tickets_sold': tickets_sold,
+        'total_revenue': total_revenue,
+        'events': events,
+    }
+    return render(request, 'ticko/organizer_dashboard.html', context)
 
 def register_view(request):
     if request.method == 'POST':
@@ -102,3 +125,63 @@ def my_tickets_view(request):
 
 def home_view(request):
     return render(request, 'ticko/home.html')
+
+@login_required
+def book_ticket(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+
+    if event.available_seats <= 0:
+        messages.error(request, "Sorry, this event is sold out.")
+        return redirect('event_list')
+
+    # Check if the user already booked this event
+    existing_ticket = Ticket.objects.filter(user=request.user, event=event).first()
+    if existing_ticket:
+        messages.info(request, "You already booked this event.")
+        return redirect('my_tickets')
+
+    # Reserve a seat
+    Ticket.objects.create(user=request.user, event=event, status='reserved')
+    event.available_seats -= 1
+    event.save()
+
+    messages.success(request, "Ticket booked successfully!")
+    return redirect('my_tickets')
+
+
+@login_required
+def my_tickets(request):
+    tickets = Ticket.objects.filter(user=request.user)
+    return render(request, 'ticko/my_tickets.html', {'tickets': tickets})
+
+@login_required
+def pay_for_ticket(request, ticket_id):
+    ticket = get_object_or_404(Ticket, id=ticket_id, user=request.user)
+
+    if request.method == "POST":
+        # Simulate payment process
+        transaction_id = get_random_string(12).upper()
+        amount = ticket.event.price
+
+        payment = Payment.objects.create(
+            ticket=ticket,
+            amount=amount,
+            transaction_id=transaction_id,
+            status='completed'
+        )
+
+        # Mark ticket as purchased
+        ticket.status = 'purchased'
+        ticket.save()
+
+        messages.success(request, f"Payment successful! Transaction ID: {transaction_id}")
+        return redirect('payment_success', payment_id=payment.id)
+
+    context = {'ticket': ticket}
+    return render(request, 'ticko/payment.html', context)
+
+
+@login_required
+def payment_success(request, payment_id):
+    payment = get_object_or_404(Payment, id=payment_id, ticket__user=request.user)
+    return render(request, 'ticko/payment_success.html', {'payment': payment})
